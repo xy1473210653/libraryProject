@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">智慧图书馆</string>
+    <string name="find_seat">座位预约</string>
+    <string name="books">图书</string>
+    <string name="market">活动</string>
+    <string name="lose">失物招领</string>
+    <string name="drawer_open">drawerOpen</string>
+    <string name="drawer_close">drawerClose</string>
+</resources>

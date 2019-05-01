@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--抽屉，左边listview的item的布局文件-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <ImageView
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="20dp"
+        android:id="@+id/left_item_image"
+        android:src="@mipmap/book"
+        android:layout_width="30dp"
+        android:layout_height="30dp" />
+    <TextView
+        android:textSize="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="30dp"
+        android:id="@+id/left_item_text"
+        android:text="@string/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>

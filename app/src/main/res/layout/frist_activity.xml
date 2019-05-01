@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--主界面布局，viewpager-->
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:hyman="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:background="#356859"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+            <com.example.xianyang.libraryproject.ImageViewPlus
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="5dp"
+                android:id="@+id/my_actionbar_head"
+                android:scaleType="centerCrop"
+                android:src="@mipmap/head"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+            <ImageButton
+                android:background="#356859"
+                android:id="@+id/my_actionbar_camera"
+                android:src="@mipmap/camera"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+            <ImageButton
+                android:background="#356859"
+                android:id="@+id/my_actionbar_sao"
+                android:src="@mipmap/sao"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+        </RelativeLayout>
+        <LinearLayout
+            android:background="#FFFBE6"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewPager"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/tab_bg"
+                android:orientation="horizontal">
+                <com.example.xianyang.libraryproject.ChangeColorIconWithText
+                    android:id="@+id/find_seat_item"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:padding="5dp"
+                    hyman:icon="@mipmap/find_seat"
+                    hyman:color="#70DB93"
+                    hyman:text="@string/find_seat"
+                    hyman:text_size="10sp"
+                    android:layout_height="wrap_content" />
+                <com.example.xianyang.libraryproject.ChangeColorIconWithText
+                    android:id="@+id/books_item"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    hyman:icon="@mipmap/books"
+                    hyman:text="@string/books"
+                    hyman:color="#70DB93"
+                    hyman:text_size="10sp"
+                    android:layout_height="wrap_content" />
+                <com.example.xianyang.libraryproject.ChangeColorIconWithText
+                    android:id="@+id/market_item"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    hyman:icon="@mipmap/market"
+                    hyman:text="@string/market"
+                    hyman:color="#70DB93"
+                    hyman:text_size="10sp"
+                    android:layout_height="wrap_content" />
+                <com.example.xianyang.libraryproject.ChangeColorIconWithText
+                    android:id="@+id/lose_item"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    hyman:icon="@mipmap/lose"
+                    hyman:text="@string/lose"
+                    hyman:color="#70DB93"
+                    hyman:text_size="10sp"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_gravity="left"
+        android:orientation="vertical"
+        android:layout_width="300dp"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:background="@drawable/left_backgroud"
+            android:layout_width="300dp"
+            android:layout_height="180dp">
+            <com.example.xianyang.libraryproject.ImageViewPlus
+                android:id="@+id/image_head"
+                android:layout_marginTop="80dp"
+                android:layout_marginLeft="30dp"
+                android:layout_marginBottom="60dp"
+                android:scaleType="centerCrop"
+                android:src="@mipmap/book"
+                android:layout_width="50dp"
+                android:layout_height="50dp" />
+        </LinearLayout>
+        <ListView
+            android:id="@+id/left_listview"
+            android:layout_width="300dp"
+            android:fitsSystemWindows="true"
+            android:layout_height="match_parent"
+            android:choiceMode="singleChoice"
+            android:background="@android:color/white">
+        </ListView>-
+    </LinearLayout>
+</android.support.v4.widget.DrawerLayout>

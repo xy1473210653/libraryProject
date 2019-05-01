@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/camera"
+        android:icon="@mipmap/camera"
+        android:title="照相机"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/sao"
+        android:icon="@mipmap/sao"
+        android:title="照相机"
+        app:showAsAction="ifRoom"/>
+</menu>
