@@ -6,10 +6,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.xianyang.libraryproject.socket.User;
@@ -29,9 +34,11 @@ import java.net.Socket;
 public class MainActivity extends AppCompatActivity {
     private Button login_button;
     private Button rigiter_button;
+    private ImageButton show_hide_passwd;//显示展示密码按钮
     private EditText userID_editText;
     private EditText userPassWD_editText;
     private Thread thread;
+    private Boolean isHide=true;
     private Handler handler=new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -57,8 +64,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StatusBarCompat.compat(this,0xFF99e2e2);
+        getSupportActionBar().hide();
         login_button = findViewById(R.id.login);
         rigiter_button = findViewById(R.id.rigister);
+        userID_editText=findViewById(R.id.userID);
+        userPassWD_editText=findViewById(R.id.user_passWD);
+        show_hide_passwd=findViewById(R.id.passwd_show_button);
+        show_hide_passwd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isHide)
+                {
+                    userPassWD_editText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                    show_hide_passwd.setBackgroundResource(R.mipmap.show_passwd);
+                    userPassWD_editText.setSelection(userPassWD_editText.getText().length());
+                    isHide=false;
+                }
+                else {
+                    isHide=true;
+                    userPassWD_editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                    show_hide_passwd.setBackgroundResource(R.mipmap.hide_passwd);
+                    userPassWD_editText.setSelection(userPassWD_editText.getText().length());
+                }
+            }
+        });
         //登录
         login_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,8 +112,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void login() {
         Log.d("socket", "login: "+"up");
-        userID_editText=findViewById(R.id.userID);
-        userPassWD_editText=findViewById(R.id.user_passWD);
         String userID=userID_editText.getText().toString();
         String passWD=userPassWD_editText.getText().toString();
         User user=new User(userID,passWD);

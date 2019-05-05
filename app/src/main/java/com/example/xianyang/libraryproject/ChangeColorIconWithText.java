@@ -129,7 +129,7 @@ public class ChangeColorIconWithText extends View {
     }
 
     private void drawSourceText(Canvas canvas, int alpha) {
-       mTextPaint.setColor(0xff333333);
+       mTextPaint.setColor(0xffffff);
        mTextPaint.setAlpha(255-alpha);
        int x=getMeasuredWidth()/2-mTextBound.width()/2;
        int y=mIconRect.bottom+mTextBound.height();

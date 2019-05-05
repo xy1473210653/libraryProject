@@ -8,7 +8,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -31,6 +33,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -111,10 +115,11 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       setContentView(R.layout.frist_activity);
-       Log.d("market", "onCreateView: "+getIntent().getStringExtra("notification"));
+        setContentView(R.layout.frist_activity);
+        StatusBarCompat.compat(this,0xFF99e2e2);
+        Log.d("market", "onCreateView: "+getIntent().getStringExtra("notification"));
         drawerLayout=findViewById(R.id.drawerLayout);
-       initView();//初始化viewPager，初始化工具栏图标按钮
+        initView();//初始化viewPager，初始化工具栏图标按钮
         initDatas();//初始化碎片，配置碎片适配器
         viewPager.setAdapter(fragmentPagerAdapter);
         viewPager.setOnPageChangeListener(this);
@@ -122,7 +127,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         initActionBar();
         initLeftDrawerLaytou();
        //让drawerlayout与actionbar关联
-       drawerToggle=new ActionBarDrawerToggle(this,drawerLayout,R.string.drawer_open,R.string.drawer_close);
+        drawerToggle=new ActionBarDrawerToggle(this,drawerLayout,R.string.drawer_open,R.string.drawer_close);
         drawerToggle.syncState();
         drawerLayout.setDrawerListener(drawerToggle);
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.INTERNET,Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
@@ -202,7 +207,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
 
         ListView listView;
         int[] res={R.mipmap.data_jie,R.mipmap.data,R.mipmap.lost,R.mipmap.er_wei_ma,R.mipmap.setting,R.mipmap.quit};
-        String[] text={"选座记录","借阅记录","失物认领记录","我的二维码","设置","注销登录"};
+        String[] text={"选座记录","借阅记录","失物 认领记录","我的二维码","设置","注销登录"};
         List<Map<String,Object>> datalist=new ArrayList<Map<String, Object>>();
         SharedPreferences sf=getSharedPreferences("user",MODE_PRIVATE);
 
@@ -395,52 +400,14 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
             }
         }
     }
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId())
-//        {
-//            case android.R.id.home:
-//                drawerToggle.onOptionsItemSelected(item);
-//                break;
-//            case R.id.camera:
-//                Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-////              Uri uri=Uri.fromFile(new File(path));
-////              intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-//                startActivityForResult(intent,200);
-//                break;
-//            case R.id.sao:
-//                Intent intent1 = new Intent(FristActivity.this, CaptureActivity.class);
-//                startActivityForResult(intent1, REQUEST_CODE);
-//                break;
-//            default:
-//                    break;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-    //隐藏actionbar，初始化自定义类actionbar
-    private void initActionBar() {
-        //获得actionbarguanli
-        ActionBar actionBar=getSupportActionBar();
-        actionBar.hide();
-        my_actionbar_head=findViewById(R.id.my_actionbar_head);
-        my_camera=findViewById(R.id.my_actionbar_camera);
-        my_sao=findViewById(R.id.my_actionbar_sao);
-        //点击事件弹出和隐藏抽屉
-        my_actionbar_head.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (drawerLayout.isDrawerOpen(Gravity.LEFT))
-                {
-                    drawerLayout.closeDrawer(Gravity.LEFT);
-                }else {
-                    drawerLayout.openDrawer(Gravity.LEFT);
-                }
-            }
-        });
-       //拍照上传点击事件
-        my_camera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                drawerToggle.onOptionsItemSelected(item);
+                break;
+            case R.id.camera:
                 Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 //根据时间定义图片名字
                 SimpleDateFormat timeStampFormat = new SimpleDateFormat(
@@ -456,16 +423,67 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
 
                 startActivityForResult(intent,200);
-            }
-        });
-        //扫一扫点击事件
-        my_sao.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                break;
+            case R.id.sao:
                 Intent intent1 = new Intent(FristActivity.this, CaptureActivity.class);
                 startActivityForResult(intent1, REQUEST_CODE);
-            }
-        });
+                break;
+            default:
+                    break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    //隐藏actionbar，初始化自定义类actionbar
+    private void initActionBar() {
+        //获得actionbarguanli
+        ActionBar actionBar=getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        //actionBar.hide();
+//        my_actionbar_head=findViewById(R.id.my_actionbar_head);
+//        my_camera=findViewById(R.id.my_actionbar_camera);
+//        my_sao=findViewById(R.id.my_actionbar_sao);
+//        //点击事件弹出和隐藏抽屉
+//        my_actionbar_head.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (drawerLayout.isDrawerOpen(Gravity.LEFT))
+//                {
+//                    drawerLayout.closeDrawer(Gravity.LEFT);
+//                }else {
+//                    drawerLayout.openDrawer(Gravity.LEFT);
+//                }
+//            }
+//        });
+//       //拍照上传点击事件
+//        my_camera.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                //根据时间定义图片名字
+//                SimpleDateFormat timeStampFormat = new SimpleDateFormat(
+//                        "yyyy_MM_dd_HH_mm_ss");
+//                String filename = timeStampFormat.format(new Date());
+//                //创建图片文件对象
+//                outputImagepath = new File(Environment.getExternalStorageDirectory(),
+//                        filename + ".jpg");
+//                //保存图片
+//                ContentValues contentValues = new ContentValues(1);
+//                contentValues.put(MediaStore.Images.Media.DATA, outputImagepath.getAbsolutePath());
+//                Uri uri = getApplication().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+//                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+//
+//                startActivityForResult(intent,200);
+//            }
+//        });
+//        //扫一扫点击事件
+//        my_sao.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent1 = new Intent(FristActivity.this, CaptureActivity.class);
+//                startActivityForResult(intent1, REQUEST_CODE);
+//            }
+//        });
     }
 
     /**
@@ -510,7 +528,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         books.setOnClickListener(this);
         market.setOnClickListener(this);
         lose.setOnClickListener(this);
-        findSeat.setIconAlpha(1.0f);
+        //findSeat.setIconAlpha(1.0f);
     }
    //图标点击事件
     @Override

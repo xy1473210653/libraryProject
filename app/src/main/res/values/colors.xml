@@ -3,7 +3,7 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
-    <color name="colorActionBar">#356859</color>
+    <color name="colorActionBar">#ff99e2e2</color>
     <color name="colorItemText">#FFFFFF</color>
 
     <color name="viewfinder_mask">#60000000</color>
