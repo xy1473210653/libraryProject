@@ -90,7 +90,7 @@ public class ShowBook extends AppCompatActivity {
                 Socket socket = null;
                 try {
                     //获取书id
-                    socket = new Socket("192.168.43.217", 8080);
+                    socket = new Socket(getResources().getString(R.string.service_ip), 8080);
                     socket.setSoTimeout(10000);
                     OutputStream os = socket.getOutputStream();
                     JSONObject object = new JSONObject();

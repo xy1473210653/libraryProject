@@ -17,6 +17,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.xianyang.libraryproject.my.MyActivity;
+import com.example.xianyang.libraryproject.my.MyAdapter;
 import com.example.xianyang.libraryproject.socket.User;
 
 import org.json.JSONException;
@@ -52,12 +54,20 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("id",userID_editText.getText().toString());
                     editor.putString("passwd",userPassWD_editText.getText().toString());
                     editor.apply();
-                    startActivity(new Intent(MainActivity.this,FristActivity.class));
+                    getmessage();
+                    //startActivity(new Intent(MainActivity.this,FristActivity.class));
                     break;
                 case 0x01:
                     Toast.makeText(MainActivity.this,"账号密码错误",Toast.LENGTH_SHORT).show();
                     break;
-            }
+                case 0x02:
+                    Bundle bundle=msg.getData();
+                    Intent intent=new Intent();
+                    intent.putExtras(bundle);
+                    setResult(RESULT_OK,intent);
+                    finish();
+                    break;
+                }
         }
     };
     @Override
@@ -120,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     if (socket!=null)
                     {
@@ -163,6 +173,71 @@ public class MainActivity extends AppCompatActivity {
             }
         });
       thread.start();
+    }
+    /**
+     * socket获取用户信息
+     */
+    private void getmessage() {
+        thread=new Thread(new Runnable() {
+            SharedPreferences sf=getSharedPreferences("user",MODE_PRIVATE);
+            String id=sf.getString("id",null);
+            String passwd=sf.getString("passwd",null);
+            @Override
+            public void run() {
+                try {
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
+                    socket.setSoTimeout(10000);
+                    if (socket!=null)
+                    {
+                        JSONObject jsonObject=new JSONObject();
+                        try {
+                            jsonObject.put("aim","user_message");
+                            jsonObject.put("id",id);
+                            jsonObject.put("password",passwd);
+                            String result=jsonObject.toString();
+                            OutputStream os=socket.getOutputStream();
+                            os.write(result.getBytes());
+                            os.flush();
+                            socket.shutdownOutput();
+
+                            BufferedReader br=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                            String res="";
+                            String line="";
+                            while ((line=br.readLine())!=null)
+                            {
+                                res+=line;
+                            }
+                            JSONObject object=new JSONObject(res);
+                            // Log.d("socket", "run: "+object.getString("tel"));
+                            Message message=new Message();
+                            Bundle bundle=new Bundle();
+                            bundle.putString("id",object.getString("id"));
+                            bundle.putString("tel",object.getString("tel"));
+                            bundle.putString("name",object.getString("name"));
+                            bundle.putString("ftimes",object.getString("ftimes"));
+                            bundle.putString("regtime",object.getString("regtime"));
+                            bundle.putString("sex",object.getString("sex"));
+                            bundle.putString("job",object.getString("job"));
+                            bundle.putString("books",object.getString("books"));
+                            bundle.putString("isbor",object.getString("isbor"));
+                            bundle.putString("crdscore",object.getString("crdscore"));
+                            //bundle.putString("faceid",object.getString("faceid"));
+                            message.what=0x02;
+                            message.setData(bundle);
+                            handler.sendMessage(message);
+                            Log.d("socket", "run: "+res);
+                            br.close();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 }
 

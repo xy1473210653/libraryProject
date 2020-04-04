@@ -30,6 +30,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -37,14 +38,20 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.xianyang.libraryproject.books.Lend_book;
+import com.example.xianyang.libraryproject.books.ShowBook;
 import com.example.xianyang.libraryproject.com.google.zxing.activity.CaptureActivity;
 import com.example.xianyang.libraryproject.frament.BooksFragment;
 import com.example.xianyang.libraryproject.frament.FindSeatFragment;
 import com.example.xianyang.libraryproject.frament.LoseFrament;
 import com.example.xianyang.libraryproject.frament.MarketFragment;
+import com.example.xianyang.libraryproject.frament.SignFragment;
 import com.example.xianyang.libraryproject.my.MyActivity;
 import com.example.xianyang.libraryproject.service.MarketService;
 
@@ -88,11 +95,15 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
     private FragmentPagerAdapter fragmentPagerAdapter;
     private List<ChangeColorIconWithText> mTabIndicators=new ArrayList<ChangeColorIconWithText>();//装载自定义图标对象
     private Thread thread;
+    private Thread book_thread;//请求单本书线程
     private  File outputImagepath;//拍照图片文件
     //打开扫描界面请求码
     private int REQUEST_CODE = 0x01;
     private boolean isFirst=true;//是否第一次刷新页面
     private ImageViewPlus imageViewPlus;//侧滑头像
+
+    private TextView textView;//用户名
+    private ImageView imageView;//用户性别
     //扫描成功返回码
     //private int RESULT_CODE_QR_SCAN = 0xA1;
     private Handler handler=new Handler(){
@@ -102,13 +113,19 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
             if (msg.what==0x00)
             {
                 Log.d("handle111111", "handleMessage: ");
-                my_actionbar_head.setImageBitmap((Bitmap) msg.obj);
                 imageViewPlus.setImageBitmap((Bitmap) msg.obj);
             }
             else if(msg.what==0x11)
             {
                 Toast.makeText(FristActivity.this, "请先登录", Toast.LENGTH_SHORT).show();
 
+            }
+            else if (msg.what==0x02)
+            {
+                Bundle bundle=msg.getData();
+                Intent intent=new Intent(FristActivity.this,ShowBook.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
             }
         }
     };
@@ -122,8 +139,8 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         initView();//初始化viewPager，初始化工具栏图标按钮
         initDatas();//初始化碎片，配置碎片适配器
         viewPager.setAdapter(fragmentPagerAdapter);
+        viewPager.setCurrentItem(2,false);
         viewPager.setOnPageChangeListener(this);
-        getHeadImage();
         initActionBar();
         initLeftDrawerLaytou();
        //让drawerlayout与actionbar关联
@@ -132,7 +149,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         drawerLayout.setDrawerListener(drawerToggle);
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.INTERNET,Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
         Intent intent=new Intent(this,MarketService.class);
-        startService(intent);
+        //startService(intent);
 
     }
 
@@ -145,7 +162,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
                     String finalId = sf.getString("id", null);
                     String passwd=sf.getString("passwd",null);
                     try {
-                        Socket socket = new Socket("192.168.43.217", 8080);
+                        Socket socket = new Socket(getResources().getString(R.string.service_ip), 8080);
                         socket.setSoTimeout(10000);
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("aim", "get_photo_picture");
@@ -212,6 +229,24 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         SharedPreferences sf=getSharedPreferences("user",MODE_PRIVATE);
 
         imageViewPlus=findViewById(R.id.image_head);
+        textView=findViewById(R.id.userID_text);
+        imageView=findViewById(R.id.sex);
+        getHeadImage();
+        if (sf.getBoolean("islogin",false))
+        {
+            textView.setText(sf.getString("name","用户123456"));
+            if (sf.getString("sex","男").equals("男"))
+            {
+                imageView.setImageResource(R.mipmap.man);
+            }
+            else {
+                imageView.setImageResource(R.mipmap.woman);
+            }
+        }
+        else {
+            textView.setText("用户123456");
+            imageView.setImageResource(R.mipmap.man);
+        }
         imageViewPlus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -220,7 +255,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
                     startActivity(new Intent(FristActivity.this,MyActivity.class));
                 }
                 else {
-                    startActivity(new Intent(FristActivity.this,MainActivity.class));
+                    startActivityForResult(new Intent(FristActivity.this,MainActivity.class),0x11);
                 }
             }
         });
@@ -241,7 +276,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
                     if (sf.getBoolean("islogin",false))
                     {
                         //未登陆时，点击注销登陆，跳转登陆页面
-                        startActivity(new Intent(FristActivity.this, MainActivity.class));
+                        startActivityForResult(new Intent(FristActivity.this, MainActivity.class),0x11);
                     }else {
 
                     }
@@ -267,8 +302,21 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         if (resultCode != RESULT_OK) {
             Log.e("image", "onActivityResult: " + "读取失败");
         } else {
+            if (requestCode==0x11)
+            {
+                Log.d("fristActivity", "onActivityResult: "+data.getExtras());
+                Bundle bundle=data.getExtras();
+                textView.setText(bundle.getString("name","用户123456"));
+                if (bundle.getString("sex","男").equals("男"))
+                {
+                    imageView.setImageResource(R.mipmap.man);
+                }
+                else {
+                    imageView.setImageResource(R.mipmap.woman);
+                }
+                getHeadImage();
+            }
             //调用扫描二维码回调
-
             if (requestCode==REQUEST_CODE)
             {
                 SharedPreferences sf=getSharedPreferences("user",MODE_PRIVATE);
@@ -281,7 +329,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
                         @Override
                         public void run() {
                             try {
-                                Socket socket = new Socket("192.168.43.217", 8080);
+                                Socket socket = new Socket(getResources().getString(R.string.service_ip), 8080);
                                 socket.setSoTimeout(10000);
                                 JSONObject jsonObject = new JSONObject();
                                 jsonObject.put("aim", "get_seat");
@@ -353,7 +401,7 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
                         @Override
                         public void run() {
                             try {
-                                Socket socket=new Socket("192.168.43.217",8080);
+                                Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                                 socket.setSoTimeout(10000);
                                 //ByteArrayOutputStream bout=new ByteArrayOutputStream();
                                 //mbitmap.compress(Bitmap.CompressFormat.JPEG,100,bout);
@@ -491,10 +539,12 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
      */
     private void initDatas() {
         FindSeatFragment findSeatFragment=new FindSeatFragment();
-        BooksFragment booksFragment=new BooksFragment();
+        SignFragment signFragment=new SignFragment();
+        Lend_book booksFragment=new Lend_book();
         MarketFragment marketFragment=new MarketFragment();
         LoseFrament loseFrament=new LoseFrament();
         mTabs.add(findSeatFragment);
+        mTabs.add(signFragment);
         mTabs.add(booksFragment);
         mTabs.add(marketFragment);
         mTabs.add(loseFrament);
@@ -516,15 +566,19 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
      */
     private void initView() {
         viewPager=findViewById(R.id.viewPager);
+        ChangeColorIconWithText changeColorIconWithText = null;
         ChangeColorIconWithText findSeat=findViewById(R.id.find_seat_item);
         mTabIndicators.add(findSeat);
-        ChangeColorIconWithText books=findViewById(R.id.books_item);
-        mTabIndicators.add(books);
+        ChangeColorIconWithText sign=findViewById(R.id.sign_view);
+        mTabIndicators.add(sign);
+        ImageViewPlus books=findViewById(R.id.main_bt);
+        mTabIndicators.add(changeColorIconWithText);
         ChangeColorIconWithText market=findViewById(R.id.market_item);
         mTabIndicators.add(market);
         ChangeColorIconWithText lose=findViewById(R.id.lose_item);
         mTabIndicators.add(lose);
         findSeat.setOnClickListener(this);
+        sign.setOnClickListener(this);
         books.setOnClickListener(this);
         market.setOnClickListener(this);
         lose.setOnClickListener(this);
@@ -536,28 +590,39 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
         resetOtherTabs();
         switch (v.getId())
         {
+            //座位预约
             case R.id.find_seat_item:
                 mTabIndicators.get(0).setIconAlpha(1);
                 viewPager.setCurrentItem(0,false);
                 break;
-            case R.id.books_item:
+                //打卡
+            case R.id.sign_view:
                 mTabIndicators.get(1).setIconAlpha(1);
                 viewPager.setCurrentItem(1,false);
                 break;
-            case R.id.market_item:
-                mTabIndicators.get(2).setIconAlpha(1);
+                //主页面
+            case R.id.main_bt:
                 viewPager.setCurrentItem(2,false);
                 break;
-            case R.id.lose_item:
+                //活动
+            case R.id.market_item:
                 mTabIndicators.get(3).setIconAlpha(1);
                 viewPager.setCurrentItem(3,false);
                 break;
+                //丢失
+            case R.id.lose_item:
+                mTabIndicators.get(4).setIconAlpha(1);
+                viewPager.setCurrentItem(4,false);
+                break;
+
+
         }
     }
     //将所有图标透明度设置为0
     private void resetOtherTabs() {
         for (int i=0;i<mTabIndicators.size();i++)
         {
+            if (mTabIndicators.get(i)!=null)
             mTabIndicators.get(i).setIconAlpha(0);
         }
     }
@@ -565,12 +630,15 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onPageScrolled(int i, float v, int i1) {
         if (v>0) {
-            ChangeColorIconWithText left = mTabIndicators.get(i);
-            ChangeColorIconWithText right = mTabIndicators.get(i + 1);
-            left.setIconAlpha(1 - v);//透明度取反
-            right.setIconAlpha(v);
-        }
+               ChangeColorIconWithText left = mTabIndicators.get(i);
+                ChangeColorIconWithText right = mTabIndicators.get(i + 1);
+                if (left!=null)
+                left.setIconAlpha(1 - v);//透明度取反
+                if (right!=null)
+                right.setIconAlpha(v);
+            } 
     }
+        
 
     @Override
     public void onPageSelected(int i) {
@@ -581,12 +649,104 @@ public class FristActivity extends AppCompatActivity implements View.OnClickList
     public void onPageScrollStateChanged(int i) {
 
     }
+    //    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater=getMenuInflater();
+//        inflater.inflate(R.menu.actionbar_seachview,menu);
+//        MenuItem item = menu.findItem(R.id.action_seach);
+//        SearchView searchView= (SearchView) item.getActionView();
+//        searchView.setIconified(false);
+//        searchView.setQueryHint("请输入书名");
+//        searchView.setSubmitButtonEnabled(true);
+//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                seachBook(query);
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                return false;
+//            }
+//        });
+//        return super.onCreateOptionsMenu(menu);
+//    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.camera,menu);
+        //getMenuInflater().inflate(R.menu.camera,menu);
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.camera,menu);
+        MenuItem item = menu.findItem(R.id.action_seach);
+        SearchView searchView= (SearchView) item.getActionView();
+        //searchView.setIconified(false);
+        searchView.setQueryHint("请输入书名");
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                seachBook(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
         return true;
     }
+    public void seachBook(String bookname)
+    {
+        book_thread=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
+                    socket.setSoTimeout(10000);
+                    JSONObject jsonObject=new JSONObject();
+                    jsonObject.put("aim","find_book_single");
+                    jsonObject.put("bookname",bookname);
+                    String result=jsonObject.toString();
+                    OutputStream os=socket.getOutputStream();
+                    os.write(result.getBytes());
+                    os.flush();
+                    socket.shutdownOutput();
 
+                    BufferedReader br=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    String line="";
+                    String res="";
+                    while ((line=br.readLine())!=null)
+                    {
+                        res+=line;
+                    }
+                    JSONObject object=new JSONObject(res);
+                    String book_return=object.getString("result");
+                    if (Boolean.parseBoolean(book_return))
+                    {
+                        Log.d("socket", "run: "+book_return);
+                        Message message=new Message();
+                        message.what=0x02;
+                        Bundle bundle=new Bundle();
+                        bundle.putString("book",res);
+                        message.setData(bundle);
+                        handler.sendMessage(message);
+                    }
+                    br.close();
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+        book_thread.start();
+    }
     @Override
     public boolean onMenuOpened(int featureId, Menu menu) {
         if (menu!=null)

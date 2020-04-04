@@ -115,7 +115,7 @@ public class FindSeatFragment extends Fragment {
             public void run() {
                 try {
                     Log.d("socket", "run: "+floorText+areaText);
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     JSONObject jsonObject=new JSONObject();
                     jsonObject.put("aim","seat_find");
@@ -172,13 +172,13 @@ public class FindSeatFragment extends Fragment {
             public void run() {
                 try {
                     Log.d("socket", "run: "+seatID);
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     JSONObject jsonObject=new JSONObject();
                     jsonObject.put("aim","seat_reserve");
                     jsonObject.put("floor",floorText);
                     jsonObject.put("area",areaText);
-                    //jsonObject.put("id",userID);
+                    jsonObject.put("id",userID);
                     jsonObject.put("seatno",String.valueOf(seatID));
                     String result=jsonObject.toString();
                     OutputStream os=socket.getOutputStream();

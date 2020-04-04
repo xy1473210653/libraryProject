@@ -42,9 +42,14 @@ public class MyActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (msg.what==0x01)
+            if (msg.what==0x02)
             {
                 Bundle bundle=msg.getData();
+                SharedPreferences sf=getSharedPreferences("user",MODE_PRIVATE);
+                SharedPreferences.Editor editor=sf.edit();
+                editor.putString("name",bundle.getString("name"));
+                editor.putString("sex",bundle.getString("sex"));
+                editor.apply();
                 list[0]+=bundle.getString("id");
                 list[3]+=bundle.getString("tel");
                 list[2]+=bundle.getString("sex");
@@ -77,7 +82,6 @@ public class MyActivity extends AppCompatActivity {
             startActivity(new Intent(MyActivity.this,MainActivity.class));
         }
     }
-
     /**
      * socket获取用户信息
      */
@@ -89,7 +93,7 @@ public class MyActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     if (socket!=null)
                     {
@@ -111,8 +115,8 @@ public class MyActivity extends AppCompatActivity {
                             {
                                 res+=line;
                             }
-                             JSONObject object=new JSONObject(res);
-                           // Log.d("socket", "run: "+object.getString("tel"));
+                            JSONObject object=new JSONObject(res);
+                            // Log.d("socket", "run: "+object.getString("tel"));
                             Message message=new Message();
                             Bundle bundle=new Bundle();
                             bundle.putString("id",object.getString("id"));
@@ -126,7 +130,7 @@ public class MyActivity extends AppCompatActivity {
                             bundle.putString("isbor",object.getString("isbor"));
                             bundle.putString("crdscore",object.getString("crdscore"));
                             //bundle.putString("faceid",object.getString("faceid"));
-                            message.what=0x01;
+                            message.what=0x02;
                             message.setData(bundle);
                             handler.sendMessage(message);
                             Log.d("socket", "run: "+res);
@@ -143,4 +147,5 @@ public class MyActivity extends AppCompatActivity {
         });
         thread.start();
     }
+
 }

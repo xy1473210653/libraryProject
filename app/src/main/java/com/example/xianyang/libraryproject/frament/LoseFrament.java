@@ -101,7 +101,7 @@ public class LoseFrament extends Fragment implements LoaderManager.LoaderCallbac
                 @Override
                 public void run() {
                     try {
-                        Socket socket = new Socket("192.168.43.217", 8080);
+                        Socket socket = new Socket(getResources().getString(R.string.service_ip), 8080);
                         socket.setSoTimeout(100000);
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("aim", "find_picture_article");
@@ -151,7 +151,7 @@ public class LoseFrament extends Fragment implements LoaderManager.LoaderCallbac
                 public void run() {
                     Socket socket = null;
                     try {
-                        socket = new Socket("192.168.43.217", 8080);
+                        socket = new Socket(getResources().getString(R.string.service_ip), 8080);
                         socket.setSoTimeout(10000);
                         OutputStream os = socket.getOutputStream();
                         JSONObject object = new JSONObject();

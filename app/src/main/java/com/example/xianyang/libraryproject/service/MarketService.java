@@ -67,7 +67,7 @@ public class MarketService extends Service {
             @Override
             public void run() {
                 try {
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     while(true)
                     {

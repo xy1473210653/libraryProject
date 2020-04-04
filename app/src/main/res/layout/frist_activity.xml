@@ -37,7 +37,7 @@
                 hyman:text_size="10sp" />
 
             <com.example.xianyang.libraryproject.ChangeColorIconWithText
-                android:id="@+id/books_item"
+                android:id="@+id/sign_view"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -45,7 +45,7 @@
                 android:layout_weight="1"
                 hyman:color="#70DB93"
                 hyman:icon="@mipmap/sign"
-                hyman:text="@string/books"
+                hyman:text="@string/sign"
                 hyman:text_size="10sp" />
 
             <LinearLayout
@@ -56,6 +56,7 @@
                 android:layout_weight="1">
 
                 <com.example.xianyang.libraryproject.ImageViewPlus
+                    android:id="@+id/main_bt"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="20dp"
@@ -111,6 +112,7 @@
                     android:scaleType="centerCrop"
                     android:src="@mipmap/login_head" />
                 <TextView
+                    android:id="@+id/userID_text"
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="20dp"
                     android:text="用户123456"

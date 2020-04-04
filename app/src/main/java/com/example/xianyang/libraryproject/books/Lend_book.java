@@ -1,5 +1,6 @@
 package com.example.xianyang.libraryproject.books;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
@@ -17,10 +19,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -45,11 +49,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
+
 /**
  * 查找书活动，列出对应图书列表
  *    点击图书，显示图书详细信息的对话框
  */
-public class Lend_book extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Bitmap>>  {
+public class Lend_book extends Fragment implements LoaderManager.LoaderCallbacks<List<Bitmap>>  {
     private List<Map<String,Object>> datalist;
     private  BookAdapter bookAdapter;
     private ListView listView;
@@ -71,24 +77,28 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
             if (msg.what==0x01)
             {
                 Bundle bundle=msg.getData();
-                Intent intent=new Intent(Lend_book.this,ShowBook.class);
+                Intent intent=new Intent(getContext(),ShowBook.class);
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
         }
     };
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.find_books);
-        listView=findViewById(R.id.book_list);
-        spinner=findViewById(R.id.books_spinner);
+        View view=inflater.inflate(R.layout.find_books,container,false);
+       // setContentView(R.layout.find_books);
+        listView=view.findViewById(R.id.book_list);
+        spinner=view.findViewById(R.id.books_spinner);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                  book_dire=getResources().getStringArray(R.array.book_spinner)[0];
                 Log.d("spinner", "onItemSelected: "+book_dire);
-                 getData();
+                SharedPreferences sf=getContext().getSharedPreferences("user",MODE_PRIVATE);
+                if(sf.getBoolean("islogin",false)) {
+                    getData();
+                }
             }
 
             @Override
@@ -96,11 +106,12 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
 
             }
         });
-        ActionBar actionBar=getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowTitleEnabled(false);
+//        ActionBar actionBar=getSupportActionBar();
+//        actionBar.setHomeButtonEnabled(true);
+//        actionBar.setDisplayShowHomeEnabled(true);
+//        actionBar.setDisplayHomeAsUpEnabled(true);
+//        actionBar.setDisplayShowTitleEnabled(false);
+        return view;
     }
 
     /**
@@ -128,7 +139,7 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
                 e.printStackTrace();
             }
         }
-        getSupportLoaderManager().initLoader(2,null,this).forceLoad();
+        getActivity().getSupportLoaderManager().initLoader(2,null,this).forceLoad();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -146,7 +157,7 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                new AlertDialog.Builder(Lend_book.this)
+                new AlertDialog.Builder(getContext())
                         .setTitle("你是否要预约该书？")
                         .setNegativeButton("确认", new DialogInterface.OnClickListener() {
                             @Override
@@ -154,12 +165,12 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
                                 new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        SharedPreferences sf=getSharedPreferences("user",MODE_PRIVATE);
+                                        SharedPreferences sf=getContext().getSharedPreferences("user",Context.MODE_PRIVATE);
                                         if(sf.getBoolean("islogin",false)) {
                                             String finalId = sf.getString("id", null);
                                             Socket socket = null;
                                             try {
-                                                socket = new Socket("192.168.43.217", 8080);
+                                                socket = new Socket(getResources().getString(R.string.service_ip), 8080);
                                                 socket.setSoTimeout(10000);
                                                 OutputStream os = socket.getOutputStream();
                                                 JSONObject object = new JSONObject();
@@ -182,7 +193,7 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
                                                     handler.post(new Runnable() {
                                                         @Override
                                                         public void run() {
-                                                            Toast.makeText(Lend_book.this,"预约成功",Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(getContext(),"预约成功",Toast.LENGTH_SHORT).show();
                                                         }
                                                     });
                                                 }
@@ -190,7 +201,7 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
                                                     handler.post(new Runnable() {
                                                         @Override
                                                         public void run() {
-                                                            Toast.makeText(Lend_book.this,"预约失败",Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(getContext(),"预约失败",Toast.LENGTH_SHORT).show();
                                                         }
                                                     });
                                                 }
@@ -219,7 +230,7 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
             @Override
             public void run() {
                 try {
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     JSONObject jsonObject=new JSONObject();
                     jsonObject.put("aim","find_book_direction");
@@ -263,37 +274,13 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
         });
         thread.start();
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.actionbar_seachview,menu);
-        MenuItem item = menu.findItem(R.id.action_seach);
-        SearchView searchView= (SearchView) item.getActionView();
-        searchView.setIconified(false);
-        searchView.setQueryHint("请输入书名");
-        searchView.setSubmitButtonEnabled(true);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                seachBook(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
-        return super.onCreateOptionsMenu(menu);
-    }
     public void seachBook(String bookname)
     {
         book_thread=new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Socket socket=new Socket("192.168.43.217",8080);
+                    Socket socket=new Socket(getResources().getString(R.string.service_ip),8080);
                     socket.setSoTimeout(10000);
                     JSONObject jsonObject=new JSONObject();
                     jsonObject.put("aim","find_book_single");
@@ -338,31 +325,31 @@ public class Lend_book extends AppCompatActivity implements LoaderManager.Loader
         });
         book_thread.start();
     }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId())
-        {
-            case android.R.id.home:
-                finish();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId())
+//        {
+//            case android.R.id.home:
+//                finish();
+//                break;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
     @NonNull
     @Override
     public Loader<List<Bitmap>> onCreateLoader(int i, @Nullable Bundle bundle) {
-        return new MyLoader(Lend_book.this,books,"find_book_picture");
+        return new MyLoader(getContext(),books,"find_book_picture");
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<List<Bitmap>> loader, List<Bitmap> bitmapList) {
-        bookAdapter=new BookAdapter(Lend_book.this,datalist,bitmapList);
+        bookAdapter=new BookAdapter(getContext(),datalist,bitmapList);
         listView.setAdapter(bookAdapter);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<List<Bitmap>> loader) {
-        new MyLoader(Lend_book.this,books,"find_book_picture");
+        new MyLoader(getContext(),books,"find_book_picture");
     }
 }

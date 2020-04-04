@@ -16,7 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -43,8 +45,15 @@ public class LoseAdapter extends BaseAdapter {
             super.handleMessage(msg);
             if (msg.what==0x00)
             {
+                Toast.makeText(context,"申请领取成功",Toast.LENGTH_SHORT);
                 finalViewHoder.isget.setText("已领取");
                 finalViewHoder.isget.setTextColor(Color.GREEN);
+            }
+            else {
+                if (msg.what==0x01)
+                {
+                    Toast.makeText(context,"申请领取失败",Toast.LENGTH_SHORT);
+                }
             }
         }
     };
@@ -100,24 +109,26 @@ public class LoseAdapter extends BaseAdapter {
                context.startActivity(intent);
             }
         });
-        viewHoder.text_place.setOnClickListener(new View.OnClickListener() {
+        convertView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onLongClick(View v) {
                 AlertDialog dialog=new AlertDialog.Builder(context)
-                        .setMessage("申请第"+position+"个格子失物")
+                        .setMessage("申请第"+(position+1)+"个格子失物")
                         .setPositiveButton("取消",null)
                         .setNegativeButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                Log.e("TAGjjjj", "run: "+"nihao" );
                                 thread = new Thread(new Runnable() {
                                     @Override
                                     public void run() {
                                         Socket socket = null;
                                         try {
-                                            socket = new Socket("192.168.43.217", 8080);
+                                            socket = new Socket(context.getResources().getString(R.string.service_ip), 8080);
                                             socket.setSoTimeout(10000);
                                             OutputStream os = socket.getOutputStream();
                                             JSONObject object = new JSONObject();
+                                            object.put("id",context.getSharedPreferences("user",Context.MODE_PRIVATE).getString("id",null));
                                             object.put("aim", "get_article");
                                             object.put("logid",datalist.get(position).get("logid"));
                                             String result = object.toString();
@@ -131,10 +142,15 @@ public class LoseAdapter extends BaseAdapter {
                                             while ((line = br.readLine()) != null) {
                                                 res += line;
                                             }
-                                            if (Boolean.parseBoolean(new JSONObject(res).getString("result")));
+                                            Log.e("TAGjjjj", "run: "+res );
+                                            if (Boolean.parseBoolean(new JSONObject(res).getString("result")))
                                             {
                                                 Message message = new Message();
                                                 message.what = 0x00;
+                                                handler.sendMessage(message);
+                                            }else {
+                                                Message message = new Message();
+                                                message.what = 0x01;
                                                 handler.sendMessage(message);
                                             }
                                         } catch (IOException e) {
@@ -148,9 +164,10 @@ public class LoseAdapter extends BaseAdapter {
                                 thread.start();
                             }
                         }).show();
-
+                return false;
             }
         });
+
         return convertView;
     }
     class ViewHoder{

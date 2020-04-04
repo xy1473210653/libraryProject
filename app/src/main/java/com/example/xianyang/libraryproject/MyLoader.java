@@ -48,7 +48,7 @@ public class MyLoader extends AsyncTaskLoader<List<Bitmap>> {
                 try {
                     //获取书id
                     String id=new JSONObject(list[i]).getString("logid");
-                    socket = new Socket("192.168.43.217", 8080);
+                    socket = new Socket(context.getResources().getString(R.string.service_ip), 8080);
                     socket.setSoTimeout(10000);
                     OutputStream os = socket.getOutputStream();
                     JSONObject object = new JSONObject();
